@@ -1,0 +1,1 @@
+This is just a little personal website (for now), where I'm going to upload all my stuff that I want to share including a small CV. The website will be hosted at www.olehoepfner.de. I'm planning on adding more functionality, as the site, at it is, is currently rather static.
