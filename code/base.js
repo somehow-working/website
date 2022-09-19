@@ -12,13 +12,14 @@ about_btn.classList.add("active");
 blue_bar.style.width = about_btn.clientWidth+"px";
 blue_bar.style.left = about_btn.getBoundingClientRect().left + "px";
 loadDoc("/res/cv.html");
+loadMenuContainer(2);
 
 about_btn.addEventListener("click", e => {
     loadDoc("/res/cv.html");
     loadMenuContainer(2);
 });
 content_btn.addEventListener("click", e => {
-    loadDoc("/res/article1.html");
+    loadDoc("/res/article_proseminar.html");
     loadMenuContainer(1);
 });
 
