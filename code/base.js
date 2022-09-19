@@ -1,3 +1,4 @@
+//init the static content as const and dynamic content as let 
 const about_btn = document.querySelector("#about_btn");
 const content_btn = document.querySelector("#content_btn");
 const sign_in_btn = document.querySelector("#sign_in_btn");
@@ -7,13 +8,17 @@ let scroll_msg = document.querySelector(".bottom_msg");
 let content_container = document.querySelector(".text");
 let block_container = document.querySelector(".menu");
 
+//set the initial active button
 about_btn.style.color= "black";
 about_btn.classList.add("active");
 blue_bar.style.width = about_btn.clientWidth+"px";
 blue_bar.style.left = about_btn.getBoundingClientRect().left + "px";
+
+//load initial docs that should be displayed on start-up
 loadDoc("/res/cv.html");
 loadMenuContainer(2);
 
+//add the required eventlisteners
 about_btn.addEventListener("click", e => {
     loadDoc("/res/cv.html");
     loadMenuContainer(2);
@@ -48,6 +53,7 @@ function navBtn(event){
     blue_bar.style.left = event.target.getBoundingClientRect().left + "px";
 }
 
+//load an arbitrary doc by simply appending the path to the doc startting with the domain (root in nginx server {}) 
 function loadDoc(name) {
     let http = new XMLHttpRequest();
 
@@ -55,16 +61,15 @@ function loadDoc(name) {
         content_container.innerHTML = http.responseText;
     }
     http.addEventListener("load", loaded);
-    http.open("GET", `http://localhost:5500${name}`);
+    http.open("GET", `http://olehoepfner.de${name}`);
     http.send();
 }
 
+//load a container that is displayed left to the main text
 function loadMenuContainer(id){
     let http = new XMLHttpRequest();
 
     function loaded(){
-        console.log("Halloooooooo");
-        console.log(http.status);
         if(http.status != 200){
             let error_msg = document.createElement("div");
             error_msg.innerText = "404: Error, the requested article cannot be found. Sorry about that.";
@@ -91,13 +96,11 @@ function loadMenuContainer(id){
    
     switch(id){
         case 1:
-            console.log(id);
-            http.open("GET", `http://localhost:5500/res/block.html`);
+            http.open("GET", `http://olehoepfner.de/res/block.html`);
             break;
 
         case 2:
-            console.log(id);
-            http.open("GET", `http://localhost:5500/res/block_cv.html`);
+            http.open("GET", `http://olehoepfner.de/res/block_cv.html`);
             break;
 
         default:
