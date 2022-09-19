@@ -1,0 +1,939 @@
+<div style="font-size: 40px; align-self: center; font-weight: bold;">Planning and Acting in the real World</div>
+<h3 style="align-self: center;">Ole Hoepfner</h3>
+<h3 style="font-size: 30px;">Structure</h3>
+<ol>
+    <li>Introduction</li>
+    <li>Approach</li>
+    <li>Scheduling Problems</li>
+    <ul style="list-style: none;">
+        <li>3.1 Introduction</li>
+        <li>3.2 The branch-and-bound algorithm</li>
+        <ul>
+            <li>3.2.1 Propositions</li>
+            <li>3.2.2 The Algorithm</li>
+            <li>3.2.3 Example</li>
+            <li>3.2.4 Analysis</li>
+        </ul>
+        <li>3.3 Shifting Bottleneck Heuristic</li>
+        <li>Conclusion and related work</li>
+    </ul>
+    <li>Hierarchical Task Network</li>
+    <ul>
+        <li>4.1 Introduction</li>
+        <ul>
+            <li>4.1.1 Formal Language</li>
+            <li>4.1.2 Plan-Based Planner</li>
+            <li>4.2.3 State-Based Planner</li>
+        </ul>
+        <li>4.2 SHOP2</li>
+        <li>4.3 Angelic Semantic</li>
+        <li>4.4 Conclusion and related work</li>
+    </ul>
+</ol>
+
+<h3 style="font-size: 30px;">1. Introduction</h3>
+<p>Planning is a crucial part of modern life. Every human subconsciously makes
+    plans on a daily basis, if it is the next trip to the supermarket or how to take
+    courses at a university in order to eventually graduate. Apart from those rather
+    simple plans, planning is also used in a wide range of applications in the real
+    world such as developing plans for large assembly lines, creating robots that
+    can take over work from humans, or managing supply chains. For these ex-
+    tremely complex planning problems, humans often need the aid of computers
+    and planning algorithms in order to solve them. These algorithms are ideally as
+    general as possible so that they have a broad range of applications without the
+    need to construct one complex program for just one type of problem. The first
+    approach to this problem led to the development of the STRIPS-Language, a
+    domain-independent (this means general) way of solving problems by consider-
+    ing the world as a conjunction of facts describing the current state. Actions in
+    the STRIP-Language alter those constants after defined effects, deleting them
+    or adding additional constraints. STRIPS-Planner produces plans by chaining
+    those actions to finally get the desired state of the world. This approach how-
+    ever becomes increasingly complex with a growing number of actions and longer
+    plans. Real-world problems are far too complex to be solved by these types of
+    planners.
+    This led to the development of the very first Hierarchical Task Network (HTN)
+    planner NOAH in the 1970s, which relies on hierarchically ordering the tasks
+    and therefore storing a lot of knowledge about them. HTN-planning has proven
+    to be a valid and realistic approach on planning problems, that can and has been
+    used for real challenges. In this paper we are first going to give an introduction
+    to the type of problems that arise when planning in the real world. Then we
+    will discuss HTN-planners, how they operate and what they plan for, as well as
+    certain challenges such as unknown planning environments and how they can
+    be dealt with.
+</p>
+<p>
+    This led to the development of the very first Hierarchical Task Network (HTN)
+planner NOAH in the 1970s, which relies on hierarchically ordering the tasks
+and therefore storing a lot of knowledge about them. HTN-planning has proven
+to be a valid and realistic approach on planning problems, that can and has been
+used for real challenges. In this paper we are first going to give an introduction
+to the type of problems that arise when planning in the real world. Then we
+will discuss HTN-planners, how they operate and what they plan for, as well as
+certain challenges such as unknown planning environments and how they can
+be dealt with.
+</p>
+<h3 style="font-size: 30px;">2. Approach</h3>
+<p>
+    In the second chapter, we are going to deal with planning problems, which
+take time constraints on planning into consideration. These types of planning
+problems are called scheduling problems. We are going to focus on the most
+prominent example of such a scheduling problem, the so-called job-shop prob-
+lem scheduling problem. We will present a brand-and-bound algorithm as well
+as briefly touching the Shifting Bottleneck Heuristic as algorithms for solving
+such problems.
+</p>
+<p>
+    Afterwards, we are going to shift to hierarchical task planning (HTN), as an
+answer to the question of how to get solutions to large and complex planning
+problems, while also requiring less computational power. The core idea of this
+approach is to refine the original problem into several smaller problems, solving
+these and then constructing a solution for the original problem by using the solutions for the smaller questions. This hierarchical structure is guiding the
+search and encodes a lot of knowledge about the relations between tasks which
+makes it superior to classical planning. We are going to discuss one well-known
+implementation of this concept, the SHOP2-planner, and see how it implements
+the HTN principles. Furthermore, we will present the angelic semantics, pro-
+posed by Marthi, Russel and Wolfe in 2007 with regards to this special approach
+on HTN planning.
+</p>
+<h3 style="font-size: 30px;">3. Scheduling Problems</h3>
+<h3 style="font-size: 25px;">3.1 Introduction</h3>
+<p>
+    In modern factories, the production of a good often requires a lot of different
+steps, which have to be processed in a specific order by different <b>machines</b>.
+Since there are multiple <b>jobs</b> and only a limited amount of machines, this raises
+the question of how to schedule those steps, which will now be referred to as
+<b>operations</b> on the machines, in order to be as fast as possible. The ultimate
+goal therefore is to schedule the operations in a way, such that the processing
+time of all operations on all machines is minimal. In a feasible solution this
+total processing time is also called the <b>makespan</b>.[2]
+</p>
+<p>
+    For example, let us consider a Volkswagen factory. The jobs that are processed
+in this factory are the production of several types of cars, e.g. SUVs’ or EVs’.
+However, the production of a complete car is usually a very complex and long
+sequence of smaller operations, for example the construction of the body of the
+car, assembling the car’s wheels or the installation of the car’s motor. Each of
+those operations takes a fixed amount of time to complete. All of these opera-
+tions have a certain order. As an example, one cannot install the motor when
+the body is not ready. Furthermore, there is only a fixed amount of machines
+that can process those operations, limiting the total amount of cars that can be
+produced. An obvious question for Volkswagen is, how to ideally schedule the
+operations on the machines to minimize the time it takes to assemble as many cars as possible and maximize the companies profits.
+</p>
+<p>
+    In the following, we will be covering a certain well-studied scheduling prob-
+lem with m machines and n jobs. The jobs will consist of at most n operations each. <br>
+Job-shop problems are commonly illustrated by disjunctive graphs. The fol-
+lowing graph shows an example of an job-shop scheduling problem with four
+jobs on a total of three machines (highlighted with different colors).
+</p>
+<img src="../img/proseminar/Screenshot 2022-09-09 213947.png" alt="Disjunctive Graph" style="align-self: center; width: 50%; height: auto;">
+<p>
+    The vertices (x, y) represent the singular operations where x denotes the job this
+specific operation is associated with and y denotes the machine this operation
+has to be scheduled on. The number above this pair indicates the <b>processing
+time</b> for this operation.[2]<br>
+The <b>conjunctive edges</b> connect operations of the same job and are grouped
+in rows (e.g. the first row consists of all the operations of the first job, in
+the order they have to be executed in). An outgoing edge from operation a to
+operation b means, that operation a has to be scheduled before operation b [1][2].
+</p>
+<p>
+    The <b>disjunctive edges</b> (those with arrows in both directions) connect op-
+erations on the same machine. Those operations cannot be processed at the
+same time, as a machine can only process one operation at a time.[1]<br>
+We therefore have to choose, which of the two jobs is going to be processed first.
+This is equal to choosing a direction for the disjunctive arrows. Note, that any
+choice cannot lead to a circle, meaning that a solution is always a <b>directed
+acyclic graph</b>.[1]
+</p>
+<p>
+    The core of the problem is to find a processing order on each of the machines
+such that the processing order of the operations in each job is still given and
+the schedule is as fast as possible. The latter goal means that the makespan,
+the total processing time of the schedule, is minimal. We can describe the con-
+straints as follows:
+</p>
+<div class="equation_container">
+    <div class="equation"><i>t<sub>j</sub></i>-<i>t<sub>i</sub></i> &GreaterEqual; <i>p<sub>i</sub></i></div>
+    <div class="eq_index">(1)</div>
+</div>
+<div class="equation_container">
+    <div class="equation"><i>t<sub>x</sub></i>-<i>t<sub>y</sub></i> &GreaterEqual; <i>p<sub>y</sub></i> &or; <i>t<sub>y</sub></i>-<i>t<sub>x</sub></i> &GreaterEqual; <i>p<sub>x</sub></i></div>
+    <div class="eq_index">(2)</div>
+</div>
+<p>
+    In Equation (1) <i>i</i> and <i>j</i> are operations of one job, where operation <i>j</i> has to be
+scheduled after operation <i>i</i>, meaning the starting time <i>t<sub>j</sub></i> of <i>j</i> is at least as big as
+the starting time <i>t<sub>i</sub></i> of <i>i</i>, added to the processing time of <i>i</i>, <i>p<sub>i</sub></i>. Variables <i>x</i> and <i>y</i>
+in Equation 2 are operations, which have to be scheduled on the same machine,
+therefore one can choose to schedule <i>x</i> before <i>y</i> or the other way around (but
+not both)[2].
+</p>
+<p>
+    n order to solve this problem one could obviously take very low-complex algo-
+rithms for choosing those disjunctive edges, such as an <b>Shortest Processing
+Time (SPT)</b> algorithm, which will always choose among the currently avail-
+able operations the one with the shortest processing time. This will obviously
+not lead to the optimal schedule in most cases, however for some problems this
+schedule may be sufficient. In other situations however, there might be the need
+for an algorithm, which will lead to a more optimal makespan.[2]<br>
+The classic job-shop problem with 10 machines and 10 jobs was proposed in
+1963 by Muth and Thompson and it was first solved in 1989 by Carlier and
+Pinson with the following branch-and-bound algorithm[2].
+</p>
+<h3 style="font-size: 25px;">3.2 The branch-and-bound algorithm</h3>
+<p>
+    The general idea of this approach is to progressively schedule a disjunctive edge
+and branch into two subtrees associated with the two possible decisions for each
+edge. We abort a branch of the search tree as soon as its obvious that this
+path is not going to yield the optimal solution, that is the lower bound of this
+node exceeds a predefined upper bound. At first this might seem quite hard
+to solve, as we are basically considering every possible schedule. However by
+applying certain propositions, which will be discussed later, non optimal choices
+of disjunctive edges can be detected quite early in the process, so that not opti-
+mal branches are detected rather early. Those subtrees associated with a ’bad’
+decision will not have to be explored, making the tree much easier to solve.[1]
+</p>
+<h3 style="font-size: 23px;">3.2.1 Propositions</h3>
+<p>
+    First of all, we introduce a couple more variables, which will be important for
+the computation. Each operation <i>i</i> has a <b>processing time</b> of <i>p<sub>i</sub></i>, a <b>release
+date</b>, meaning the earliest possible starting time <i>r<sub>i</sub></i>, as well as a tail <i>q<sub>i</sub></i>, which
+is the difference between this operation <i>i</i> and the end of the schedule[2]. The
+last two variables are calculated by applying the <b>Bellman-Ford algorithm</b> to
+find the longest path between the start and the operation respectively between
+the operation and the end of the schedule.[2]
+</p>
+<p>
+    Before constructing the actual search tree, we solve the scheduling problem
+for every single machine on it’s own. That means we choose one machine <i>k</i> and
+define a subset <i>I<sub>k</sub></i>, which combines all the operations of all jobs, which have to
+be scheduled on machine <i>k</i>. Then we solve the one-machine-problem, meaning
+we optimize the schedule on <i>k</i> without considering the schedules on other ma-
+chines, which might interfere with our schedule.[2]<br>
+First, we use a much easier algorithm (e.g. Johnson’s algorithm) to get a so-
+lution f of our one-machine problem, which will constitute an upper bound of
+our perfect solution. Since we search for an optimal solution to the problem,
+our solution cannot be greater than an already found one.[2][1]<br>
+Furthermore, we can easily compute a lower bound of the (preemptive) schedule
+with the following equation:[2]
+</p>
+<div class="equation_container">
+    <div class="equation"><i>LB(I) = Min{r<sub>i</sub> | i &in; I} + &Sum;<sub>i&in;I</sub> p<sub>i</sub> + min{q<sub>i</sub>|i&in;I}</i></div>
+    <div class="eq_index">(3)</div>
+</div>
+<p>
+    Moreover, the maximum of the lower bounds for each machine is a lower bound
+of the complete scheduling problem.[2] We solve the <b>one-machine problem</b>
+by identifying operations that have to be processed before all other operations
+as well as those that have to be processed after every other operation. For
+this reason we define a subset of the set of all operations called <b>Clique C</b>.
+We associate two further subsets E and S with each Clique. E combines all
+operations that can be scheduled before all other operation in a feasible schedule.
+Each operation in E is also called an <b>input</b> to the Clique. S is the subset of
+operations which can be scheduled after all other operations, and it’s elements
+are called <b>outputs</b>. Let k ∈ C be an operation. We can conclude:[2]
+</p>
+<div class="equation_container">
+    <div class="equation"><i>r<sub>k</sub>+&Sum;<sub>i &in; C</sub>p<sub>i</sub>+min{q<sub>i</sub>|i &in; C&setminus;{k}}>f</i></div>
+    <div class="eq_index">(4)</div>
+</div>
+<div class="equation_container">
+    <div class="equation"><i>Min {r<sub>i</sub>|i&in; C&setminus; {k}} + &Sum;<sub>i &in; C</sub> p <sub>i</sub> + q<sub>k</sub> > f</i></div>
+    <div class="eq_index">(5)</div>
+</div>
+<p>
+    If Proposition 4 is satisfied, we know, that if we schedule k before all operations
+we will get a schedule which is bigger (longer) than the upper bound, therefore
+<i>k</i> cannot be an input to this Clique. The same applies to <i>k</i> not being the output
+of C if proposition 5 is satisfied.[2] Furthermore, if the Clique only contains one
+disjunctive edge <i>(i, j)</i>, if
+</p>
+<div class="equation_container">
+    <div class="equation"><i>r<sub>i</sub> + p<sub>i</sub> + p<sub>j</sub> + q<sub>j</sub> > f</i></div>
+    <div class="eq_index">(6)</div>
+</div>
+<p>
+    holds true, then we will select arc <i>(j, i)</i> in our solution.[2]<br>
+If
+</p>
+<div class="equation_container">
+    <div class="equation"><i>LB(C&setminus; {k}) + p<sub>k</sub> > f</i></div>
+    <div class="eq_index">(7)</div>
+</div>
+<p>
+    is satisfied, operation k is either scheduled before or after all operations, since
+either the release date or the tail of k is the minimum among the release dates
+(resp. tails) of the other operations in C.[2] We can now see, that if both
+Proposition 7 and 4 are satisfied, k is an output of Clique C and we can fix all
+disjunctive arcs (i,k) where i is an operation in C without k.[2] Similarly, we can
+fix the disjunctive arc (k,i) if Propositions 7 and 5 are satisfied. In this case, k
+is the input of Clique C and scheduled before every other operation.[2] Those
+selections will cut the search tree substantially.[1]
+</p>
+<h3 style="font-size: 23px;">3.2.2 The algorithm</h3>
+<p>
+    At the start of the algorithm we initialize the data structures and compute the
+upper bound of the makespan with an opportunistic algorithm.[2]<br>
+The algorithm first solves the one-machine problems according to the previous
+propositions. We start with setting the Clique C as I, meaning C contains every
+operation scheduled on the specific machine. Then, if we find an input or an
+output k to this current Clique, we save the found operation either in set E or
+S respectively and continue with C \ {k}, until set C is empty. We do this for
+every machine.[2]
+</p>
+<p>
+    The algorithm then looks at the machine with the highest lower bound (cal-
+culated with Proposition 3), called the critical machine, schedules two oper-
+ations with respect to each other on this machine by applying the above stated
+propositions and updates the release dates as well as the tails. As soon as we
+have selected all disjunctive edges on the critical machine, we try to fix the
+edges on the other machines by yet again applying the propositions. When the
+propositions do not lead to the selection of any unscheduled edges, we start the
+branching process.[2]<br>
+We choose a disjunctive edge, that has not yet been scheduled, belonging to a
+set E or S of one of the one-machine problems, with minimal cardinality. This
+way the cardinality of this set (E or S) will decrease during the planning phase.
+As soon as it hits 1 or 0 we can efficiently apply proposition 6.[2]. In case
+of multiple sets with the same minimal cardinality, we compute the following
+variables for every disjunction (LB here is the lower bound)[2][1]:
+</p>
+<div class="equation_container">
+    <div class="equation"><i>d<sub>i,j</sub> = Max(0,r<sub>i</sub> + p<sub>i</sub> + p<sub>j</sub>+ q<sub>j</sub> - LB)</i></div>
+    <div class="eq_index">(8)</div>
+</div>
+<div class="equation_container">
+    <div class="equation"><i>d<sub>j,i</sub> = Max(0,r<sub>j</sub> + p<sub>j</sub> + p<sub>i</sub>+ q<sub>i</sub> - LB)</i></div>
+    <div class="eq_index">(9)</div>
+</div>
+<div class="equation_container">
+    <div class="equation"><i>a<sub>i,j</sub> = Min(d<sub>i,j</sub>, d<sub>j,i</sub>)</i></div>
+    <div class="eq_index">(10)</div>
+</div>
+<div class="equation_container">
+    <div class="equation"><i>v<sub>i,j</sub> = |d<sub>i,j</sub> - d<sub>j,i</sub>|</i></div>
+    <div class="eq_index">(11)</div>
+</div>
+<p>
+    and choose the disjunctive edge with the highest <i>v<sub>i,j</sub></i> or, if there are again ties,
+the one which maximizes <i>a<sub>i,j</sub></i> [1][2]. We therefore basically choose a disjunctive
+pair, where it’s most likely that one of the choices leads to a violation of the
+upper bound and therefore to a cut and simplification of the search tree. We
+add the chosen disjunctive arcs as nodes to the search tree, check, whether a
+subtree violates the upper bound and compute the new release dates and tails
+for each subtree. We then try to yet again apply the above stated propositions 
+in order to fix certain arcs in the subtrees. As soon as we can not find any
+fixable edge we yet again branch into the next subtrees. This loop is going to
+be repeated until all disjunctive edges are selected.[2][1]
+</p>
+<p>
+    Out of all feasible schedules defined by the search tree, which have a makespan
+smaller or equal to the upper bound, we choose the branch with minimal
+makespan. This is the optimal solution to our problem.[2]
+</p>
+<h3 style="font-size: 23px;">3.2.3 Example</h3>
+<p>
+    We start by setting the upper bound as 26.<br>
+As stated above, we start with the critical machine, which is in this case ma-
+chine 2, and start applying the propositions.<br>
+When applying proposition 7 on machine 2, we can see that LB(C \ (2, 2)) =
+3+7+4+6+0+7=27 is bigger than the upper bound. By applying proposition
+5, we can rule out, that (2,2) is the output of machine. Consequently, (2,2) has
+to be the input to machine 2 and we can fix all edges of the form (2, 2) → (k, 2),
+which leads to 3 fixed edges.[2]<br>
+Likewise, we can see that out of the remaining Clique, operation (4,2) has to be
+the output of the Clique and we can fix all edges (k, 2) → (4, 2). For the last
+two operations (1,2) and (3,2) we can efficiently use proposition 6. We can see
+that if we would choose the direction (3, 2) → (1, 2), we would get a schedule of
+7+4+7+9=27, which is bigger than the upper bound. Consequently we choose
+the reverse direction and schedule (1, 2) → (3, 2). Machine 2 is now completely
+selected and we can start with the other two machines.[2]<br>
+By repeatedly applying proposition 6 to the disjunctive edges of machine 3, we
+can determine that (2,3) has to be scheduled after all other operations of this
+machine (as an example choosing the schedule ((2, 3) → (1, 3)) results in a min-
+imum schedule of 17+2+9=28, which violates the upper bound). As a result
+we can fix all edges of the form ((k, 3) → (2, 3)). Similarly we can determine
+that operation (1,3) has to be the output of the remaining Clique of machine 3,
+resulting in the fixing of two additional edges. The last edge does not result in
+any violations, we therefore try to apply the propositions on machine 1. Keep
+in mind, that we update the release times and tails of each operation according
+to our current partially complete schedule.[2]<br>
+With the updated release times and times we can conclude that (3,1) has to be
+the output of machine 1. This is easy to see when we consider the updated re-
+lease time of 18 for this operation (achieved through the path (2, 2) → (1, 2) →
+(3, 2) → (3, 1)). Likewise we can conclude that (2,1) has to be the update of
+the remaining set.[2]<br>
+We now have two disjunctive egdes left, one between (1,1) and (4,1) and the
+other one between (3,3) and (4,3), that cannot be selected through the usage of
+the propositions, since both directions lead a schedule smaller than the upper
+bound. We therefore have to branch into two subtrees.[2]
+</p>
+<img src="../img/proseminar/Screenshot 2022-09-10 144929.png" alt="Search Space" style="align-self: center; width: 50%; height: auto;">
+<p>
+    On the left side of the subtree we can immediately select (3, 3) → (4, 3) by
+applying the propositions using the updated release times and tails.<br>
+At this point, every edge in the graph is selected and we simply have to extract
+the solution. When scheduling (1, 1) → (4, 1) together with (3, 3) → (4, 3), we
+will receive a schedule of 25. When scheduling (4, 1) → (1, 1) and (3, 3) → (4, 3)
+we get a length of 26. We receive the same length when we schedule (4, 1) →
+(1, 1) and (4, 3) → (3, 3). The best schedule of this instance is therefore 25 and
+we have found the corresponding schedule.[2]
+</p>
+<h3 style="font-size: 23px;">3.2.4 Analysis</h3>
+<p>
+    This algorithm provably finds the correct minimal solution to the job-shop prob-
+lem. On the downside this unoptimized version of the algorithm has a com-
+plexity of O(n<sup>4</sup>) meaning it is often not practical for calculating the optimal
+schedules for big factories which often have to deal with ten thousands of jobs
+and thousands machines. Furthermore the algorithm requires that the expert
+can give a good upper bound to the problem since a bad upper bound can lead
+to an extreme increase of required time for computing, basically trying every
+possible schedule.[2][1]
+</p>
+<h3 style="font-size: 25px;">3.3 Shifting Bottleneck Heuristic</h3>
+<p>
+    The previously presented algorithm yields perfect solutions at the cost of a high
+complexity. In this section we will briefly discuss a method, which also leads
+to good solutions to the job-shop scheduling problem, while also being rather
+efficient. This algorithm can be used to find a good upper bound for a later
+application of the branch-and-bound approach.<br>
+As the name of this section suggests, this method is ’only’ a heuristic, which
+means that it not always yields a perfect solution. However, experiments have
+shown that the solutions are usually very close to the optimal solution for a
+problem, sometimes even finding the optimal one, while also being fast and
+straightforward. The general approach of the Shifting Bottleneck Heuristic is
+the idea, that the perfect schedule shares a lot of similarities with the solutions
+of the one-machine problems it consists of. Basically, we make the assumption,
+that the majority of disjunctive edges chosen in each one-machine problem are
+also part of the optimal solution of the complete schedule.[1] <br>
+</p>
+<p>
+    The core of this heuristic is similar to the branch-and-bound algorithm, as it also
+first considers one machine at a time. The algorithm takes the machine with
+the longest optimal schedule, which therefore represents a bottleneck, hence the
+name, and applies the branch-and-bound algorithm on this one-machine prob-
+lem, schedules the chosen disjunctive edges and updates the release and tails
+of the remaining operations. It then takes the next unscheduled machine and
+schedules it, considering the updated release dates and tails.[1]<br>
+After each addition of a machine to the overall plan, the algorithm revisits the
+already scheduled machines and tries to optimize the found schedule. It does so
+by iteratively choosing an already scheduled machine and deleting the schedule
+on this machine. The edges associated with the other scheduled machines are
+not touched, therefore we now have to consider adjusted release times and tails
+when we reschedule the machine. The resulting schedule cannot be greater than
+the already found one, since we either find a better solution or we just keep the
+original schedule.[1]
+</p>
+<pre>
+    M <- set of all machines
+    #contains all machines that have been scheduled
+    M_scheduled <- {}  
+
+    while M != M_scheduled:
+        for (m in M - M_scheduled):
+            Compute heads and tails of all operations on m
+            Solve the one-machine problem on machine m
+        
+        #choose the bottleneck maschine
+        m <- machine with the largest schedule           
+        M_scheduled <- M_scheduled + m
+
+        for (m in M_scheduled):
+            delete all edges on m
+            compute heads and tails of m 
+            solve the one-machine problem
+            
+    return M_scheduled
+</pre>
+<p>
+    The described approach here is very simplistic and numerous improvements
+have been made over the years in order to get better estimates and a faster
+algorithm.[1]
+</p>
+<h3 style="font-size: 25px;">3.4 Conclusion and related work</h3>
+<p>
+    Apart from the presented problem, there exist a lot more variations of the job
+shop problem. For example there is a flow-show problem, where the order in
+which the operations have to be processed on each machine is the same for every
+problem, or open-shop problems without the conjunctive constraints of the job-
+shop problem, meaning the operations of a job can be processed in any order.
+Each problem allows more variations, for example by continuously changing the
+amount of jobs or machines.[1]
+</p>
+<p>
+    The presented methods are rather old yet their approaches are still relevant.
+A lot of optimizations have made both methods more precise and faster[1]. Fur-
+thermore, there are several other approaches and algorithms for this type of
+problem. Honourable approaches are tabu search, local search and simulated
+annealing [1].<br>
+Solutions to other more complex variations of the job shop problem, for example
+the flexible job shop problem where one can choose the machine an operation
+has to be processed on out of a set of machines, are still an active field of research.
+</p>
+<p>
+    This section focused on scheduling reusable resources, in our case machines. Af-
+ter processing an operation on a machine, the machine became available again
+and we could process another operation. However not all resources are reusable,
+but can only be used once. Coming back to our Volkswagen-factory example
+from the beginning, a resource that can only be used once are, for example,
+tires. As soon as we install a set of tires, we obviously can not use the same set
+on another car. If we would be planning in the real world, one has to consider
+both types of resources.[8]
+</p>
+<h3 style="font-size: 30px;">4. Hierarchical Task Networks</h3>
+<h3 style="font-size: 25px;">4.1 Introduction</h3>
+<p>
+    Classical planning, like the STRIPS algorithm, sequences primitive actions con-
+sidering their <b>preconditions</b> and <b>effects</b>, in order to achieve a certain state,
+the <b>goal state</b>[8]. This approach becomes increasingly (exponentially) com-
+plex, when there is a large amount of primitive actions. For example a problem,
+which has a solution consisting of b primitive actions, and d allowed actions
+at each state has theoretically search through O(d<sup>b</sup>) possible sequences before
+finding a feasible solution (although this can partially be improved with certain
+heuristics).[3][8]<br>
+<b>Hierarchical Task Networks (HTN)</b> take a different yet intuitive approach
+to planning. Instead of trying to find a solution to the complete problem, we de-
+compose the original problem into a <b>task-network</b>, consisting of several tasks,
+which have to be processed in a certain order. Those tasks are of two kinds.
+<b>Primitive tasks</b> behave like actions in classical planning, meaning they have
+preconditions that have to be satisfied before the task can be applied and an
+effect on the atoms of a state. The new kind of tasks are called <b>compound
+tasks</b> or <b>High Level Actions (HLA)</b> (we are going to use these terms inter-
+changeably). Those tasks can be decomposed further into other task networks,
+chosen by a construct referred to as a <b>method</b>, each representing a possible
+way of achieving this HLA[3].
+</p>
+<p>
+    The goal of HTN-planning is to find an applicable task network, which only
+consists of primitive actions. HTN-planners therefore differ from classical plan-
+ners in how they plan something and the ultimate goal of the planning process.[4]
+This concept of splitting and solving parts of the problem is widely-used and
+corresponds to the way humans solve complex problems. Let us consider for
+example a city-trip. Humans usually do not try to plan every simple step at
+once, but decompose the problem of planning the trip into smaller problems,
+such as how to get to the city, booking a hotel and a guided tour, choosing
+a restaurant and travelling back home. Certain sub-problems can be further
+decomposed. For example the problem of getting to the city can be solved by
+taking the bus, which requires buying a ticket and getting to the bus station
+in time, or by taking the train or the plane, each of which would require other
+steps.[3]<br>
+Figure 2 shows a task hierarchy of the travel-example.
+</p>
+<img src="../img/proseminar/Screenshot 2022-09-10 151530.png" alt="Tree for the travel-example illustrating the refinements" style="align-self: center; width: 50%; height: auto;">
+<p>
+    Dashed lines indicate a choice, in this case between taking the plane or the
+car. Something, which is not really shown in the graph but has to be consid-
+ered, is the order in which the tasks have to be executed. In general, the tasks
+are going to be executed from left to right, however for some tasks the order does
+not really matter. For example one could choose between visiting the statue or
+the museum first.
+</p>
+<h3 style="font-size: 23px;">4.1.1 Formal Language</h3>
+<p>
+    First, we will briefly introduce the definitions of the individual components of
+HTN-planning. We will start by describing the <b>HTN-Language</b>, which is used
+to describe the world, the operations that the planner can use as well as possible
+constraints on their applicability. This HTN-Language is a six-tuple.[3]
+</p>
+<div class="equation_container">
+    <div class="equation"><i>(V, C, P, T<sub>p</sub>, T<sub>c</sub>, N )</i></div>
+    <div class="eq_index"></div>
+</div>
+<p>
+    <i>V</i> is an infinite set of <b>Variables</b> and <i>C</i> is a finite set of <b>Constants</b> (as a planner
+can only deal with a finite number of objects).[3]<br>
+<i>P</i> is a set of <b>Predicates</b> (or atoms/fluents) where each of the predicates receives
+a list of variables and constants and evaluates them to either true or false. An
+example for this would be On(a,b), where a and b are of some type of objects
+that can be stacked on to each other. ’On’ evaluates to true if a is stacked on b
+and to false otherwise. Similarly we could define On(a, table) as an expression
+that is true if some object a is stacked on to a table (in this case a constant).[3][4]<br>
+T<sub>p</sub> and T<sub>c</sub> are the sets of primitive respectively compound tasks and <i>N</i> finally
+is an infinite set of names used to label and identify tasks during the planning
+process.[4]<br>
+A <b>state</b> in the planning process is a set of predicates which evaluate to true.
+All predicates which are not in this set are treated as false, this is commonly
+referred to as a <b>closed-world-assumption</b>. The set of all possible states is
+therefore 2<sup><i>P</i></sup> .[4]<br>
+Similar to classical planning, HTN-planning uses <b>operators</b>. An operator o is
+a triple
+</p>
+<div class="equation_container">
+    <div class="equation"><i>(p(o),pre(o),eff(o))</i></div>
+    <div class="eq_index"></div>
+</div>
+<p>
+    where p(o) ∈ T<sub>p</sub> is a primitive task and pre(o) ∈ 2<sup>Q</sup> respectively eff(o) ∈ 2<sup>Q</sup>
+denote the preconditions that have to be true in order for the primitive task to
+be executable respectively the post-conditions which either adds predicates to
+the new state or deletes them[4]. In classical planning, the effects are usually
+split into a list of added predicates (the positive effects) and a list of deleted
+predicates (the negative effects), here they are merged together for an easier
+representation. The post-conditions are not equal to the state of the world after
+the application of the operator, they rather modify the state. Atoms that do
+not appear in the precondition list are left unchanged.[4]<br>
+A task network
+</p>
+<div class="equation_container">
+    <div class="equation"><i>(T ,ψ)</i></div>
+    <div class="eq_index"></div>
+</div>
+<p>
+    consists of a finite set of tasks <i>T</i> , where each of the tasks is labeled with an
+element of <i>N</i> and ψ is a <b>constraint</b> that has to be satisfied during the planning
+process. ψ is a conjunction of atomic constraints which are, for example, fixed
+variable bindings, an order of execution on certain tasks or that certain states
+are guaranteed between the execution of two tasks.[3][4]
+A method in general is a pair
+</p>
+<div class="equation_container">
+    <div class="equation"><i>(α,d)</i></div>
+    <div class="eq_index"></div>
+</div>
+<p>
+    , where α ∈ Tc is a compound task which can be decomposed into another task
+network d. Typically there is more than one method for one compound task α
+expressing the various ways this task can be accomplished. In the context of
+state-based planning we will later see an expanded definition of methods, which
+also takes preconditions into account.[4]<br>
+A Planning Problem in it’s very basic form is a tuple
+</p>
+<div class="equation_container">
+    <div class="equation"><i>(O,M ,s<sub>0</sub>,T<sub>0</sub>)</i></div>
+    <div class="eq_index"></div>
+</div>
+<p>
+    with a list of operators <i>O</i>, a list of methods <i>M</i>, an initial state <i>s<sub>0</sub></i> and an initial
+task network <i>T<sub>0</sub></i>. Some literature also explicitly adds the sets of primitive and
+compound task symbols as well as the set of predicates to this list. Defining
+such a planning problem is the task of a human expert.[4][3]<br>
+A solution in HTN-planning is a task network, which only consists of primitive
+tasks, a so called primitive task network.[3]
+</p>
+<p>
+    In general, there are two types of HTN-planners, plan-based and state-based
+planners, which both make use of hierarchical decomposition but differ from
+each other in their search space, meaning they plan differently.[4]
+</p>
+<h3 style="font-size: 23px;">4.1.2 Plan-Based Planners</h3>
+<p>
+    Plan-based planners start with a top-level task network and repeatedly take
+compound task and replace them with one of their refinements. This leads to a
+new task network after every step. The algorithm stops when there are no more
+compound tasks that can be decomposed, meaning that the task network is
+primitive. Ordering the primitive tasks so that this task network is executable
+leads to a solution to the planning problem. Plan-based algorithms usually
+delay task ordering and variable bindings in order to be as general as possible.
+Notable plan-based planners include UMCP or the first HTN-planner NOAH.[4]
+The way plan-based planners work can be seen in the following graph.
+</p>
+<img src="../img/proseminar/Screenshot 2022-09-10 153850.png" alt="Search-Space of a plan-based planner" style="align-self: center; width: 50%; height: auto;">
+<p>
+    At the top of this graph, which we will now refer to as the search space, is
+the input task network T N0. In some literature this first task network is en-
+capsulated in a single compound task ’Act’[8]. The edges in the search space
+represent the execution of a method which refines the parent node (the origi-
+nal task network) into another task network. This is accomplished by choosing
+a compound task and then using a suitable method mi for this task. In the 
+process the compound task is replaced by the task network described by the
+method. Furthermore, the constraints of the original task network will be ex-
+panded. For example, if the initial compound task is forced by a constraint to
+precede another task in the task network, all of the tasks in the task network
+that replaces this compound task will also have to precede this specific task.[4]
+A problem that most plan-based planners have to deal with, is the <b>interaction</b>
+among tasks. As an example, among the newly added tasks may be one, which
+has the effect of deleting a precondition of another task. A way of dealing with
+this specific interaction may be to enforce that this task has to be scheduled
+after the task it is threatening. The detection and resolving of those interac-
+tions is the task of critics, although their implementation differs from planner
+to planner.[4] UMCP for example uses a function that yields sets of task net-
+works, that satisfy some of the constraints. UMCP then searches among those
+task networks by further refining compound tasks, adding new tasks to the task
+network and reapplying the critic-function until a task network is found, that
+satisfies all constraints.[3][4]
+</p>
+<h3 style="font-size: 23px;">4.1.3 State-Based Planners</h3>
+<p>
+    State-based planners start at the current start state. The planning process starts
+by examining, whether a viable task in the current task network is primitive or
+compound. As soon as a primitive task is found, the planner executes it (if
+possible in the current state), deletes the task and continues planning with the
+altered start space and task network. In comparison to plan-based planners,
+planning is much easier as this ordered way of planning enforces, that tasks
+that may be scheduled in the future cannot interfere with the preconditions of
+the already scheduled tasks. This leads to much less interactions between the
+tasks, but also requires significantly more knowledge over the execution order of
+the tasks in comparison to plan-based planners. SHOP2, which we will discuss
+later, is such a state-based planner, as well as SIADEX.[4]<br>
+We start with a start space, which is going to be changed during the plan-
+ning process by the tasks. If we want to apply an operator, we alter the state
+corresponding to the effects defined by this operator and delete the primitive
+task. If we want to apply a non-primitive compound task, we search for a suit-
+able method for this task and replace it with the task network defined by that
+method. As in plan-based planning, we expand the set of constraints by ensur-
+ing that the newly added tasks still satisfy the same ordering constraints that
+the initial compound task did.[4]<br>
+The graph for state-based planning can be seen in the following graph.
+</p>
+<img src="../img/proseminar/Screenshot 2022-09-10 154323.png" alt="Search-Space of a state-based planner" style="align-self: center; width: 50%; height: auto;">
+<p>
+    The vertices correspond to the current state of the world. This state can be al-
+tered by different primitive actions s (that are applicable in this state), leading
+to a new state. The compound tasks are represented by loops from one state
+to itself and solely change the task network (but not the state itself). We can
+further see that some states of the world can be reached by different schedules
+of operations.
+</p>
+<p>
+    Unlike in plan-based planners, interactions among tasks usually do not appear
+since a newly added task can not delete the preconditions of an earlier scheduled
+task. However some state-based planners allow the partial ordering of tasks and
+subtasks, meaning that the order of some tasks is still unclear and has to be
+figured out. Later we will see how SHOP2. which allows this partial ordering,
+deals with these interactions.[4][7]
+</p>
+<h3 style="font-size: 25px;">4.2 SHOP2</h3>
+<p>
+    SHOP2 is an acronym of Simple Hierarchical Ordered Planner 2 [7]. It was
+presented in 2003 and it succeeded the SHOP planner. SHOP2 is a state-based
+HTN planner and uses the early-commitment strategy, meaning it executes ac-
+tions when they appear.[4]<br>
+This enforces that the executing of operations does not threaten the execution
+of previously added tasks. SHOP2 makes use of a partial order on the tasks of
+a task network, this means that some tasks do have a specified execution order
+while others do not. It is allowed to interleave tasks and subtasks.[7] Conflicts
+that may arise through this interleaving are resolved by adding an immediate
+flag to the threatened task which prevents other tasks from being executed be-
+tween the protected task and it’s direct predecessor.[4]
+</p>
+<pre>
+    (:method
+        ; head
+            (travel by bus ?person ?destination)
+        ; precondition
+            (and
+                (at ?person ?bus stop)
+                (bus ?b)
+                (at ?b ?bus stop)
+                (different ?bus stop ?destination))
+        ; subtasks
+            (:ordered
+                (enter bus ?person ?b ?bus stop)
+                (move bus ?b ?destination)
+                (leave bus ?person ?b ?destination)))
+</pre>
+<p>
+    SHOP2’s algorithm starts by choosing a task which is immediately available at
+the beginning according to the ordering. It then evaluates whether the task is
+primitive or compound.[7]<br>
+If the task is primitive, SHOP2 searches for an operator whose preconditions
+are satisfied by the current state. In case that there is not a suitable operator,
+the program aborts this search tree and tries to schedule another available task,
+in case there is such an operator, SHOP2 modifies the current state according
+to the post-condition set of the operator and removes the edited task from the
+set of tasks.[7]<br>
+If the found task is compound, the algorithm searches for a method for this
+task. Methods in SHOP2 are slightly different to the methods, which we intro-
+duced earlier in that they contain preconditions, meaning that not every way of
+decomposing a compound task is available in every scenario. The author of the
+planning domain can suggest a fixed schedule on how these preconditions should
+be checked during the planning process in order to guide the planning phase.
+SHOP2 then iterates over this fixed list of preconditions. If the preconditions
+are satisfied, SHOP2 chooses this decomposition, otherwise it checks the next
+set of preconditions and so on. If there is more than one method specified for
+this compound task, SHOP2 nondeterministically chooses one method and tries
+to apply it.[7]
+</p>
+<pre>
+    function SHOP2(init state s, 
+        partially ordered task-set T, planning domain D):
+    P <- {}         #the empty plan
+    #start with a task that doesn't have to be preceeded
+    task <- valid task in T  
+    while T not empty:
+        if task is empty:
+            # no suitable task has been found
+            return P                   
+            
+        #first case: task t is primitive
+        if task is primitive:
+            a <- operator that sattisfies this task
+            if no operator is found:
+                return failure
+            
+            #alter the state
+            execute a                       
+            append a to P
+            delete task from T
+            task <- valid task in T
+            
+        else:
+            a <- method that sattisfies this task
+            if no method is found:
+                return failure
+            
+            replace task with the tasknetwork of a
+            if tasknetwork of a is not empty:
+                task <- task from the tasknetwork of a
+                
+            else:
+                task <- valid task in T
+                
+    return P
+</pre>
+<p>
+    After working on a task (either decomposing a compound task or executing a
+primitive one), SHOP2 resumes with the next task and applies the above stated
+formulas until the goal is reached, that is the plan is empty and all actions were
+executed.[7]
+</p>
+<p>
+    SHOP2 allows to expand operators and methods with a cost parameter to mark
+plans which require a lot of effort to execute them[7]. One can program SHOP2
+to first try solutions with minimal cost and to only consider costly plans if there
+are no ’cheap’ plans. SHOP2 can, if needed, also implement a branch-and-bound
+approach on planning to get even better plans. This approach however is very
+computation-heavy since the algorithm has to spend extra time on optimizing the found plans.[7]
+</p>
+<h3 style="font-size: 25px;">4.3 Angelic Semantics</h3>
+<p>
+    In this section, we are going to focus on a technique, which has partially already
+been used in the previous section. SHOP2 (and other state-based planners) as-
+signed every method a precondition in order to check, whether a certain method
+is applicable.[7]<br>
+Angelic Semantics expand the previously discussed definitions of HTN-planning
+by adding preconditions and effects to compound high level tasks, similar to
+’normal’ primitive tasks. If we can find a provably correct high level plan, we
+can commit to this plan and delay the actual decomposition of the high level
+tasks since we know that there exists a decomposition for each task such that
+the goal is achieved.[6]<br>
+This gives angelic planning an advantage over simple HTN-planning as described
+in the first part of this section, since we now are able to prune the search state
+by eliminating parts of the search tree, that provably (as long as the precondi-
+tions are correct) achieves the desired state.[8]
+</p>
+<p>
+    When discussing angelic semantics, we first have to consider the difficulties
+of describing the effects of high level actions.[6]<br>
+Let us consider for example a HLA with two possible refinements into one prim-
+itive task, A and B, each. A has the effect of adding a fluent u while also
+deleting v and B has the effect of adding u but also adding v. This means that
+the execution of this HLA will certainly leave u as true while possibly adding or
+deleting v. This scenario cannot be expressed using the notation we used up to
+this point. We therefore expand the notation with a  ̃± symbol, which denotes
+that a HLA can either add or delete a condition based upon the decisions it
+takes during it’s decomposition process.[6]
+</p>
+<p>
+    In general, the effects of an HLA are the union of all effects of all possible
+primitive refinements for this HLA, that are applicable in this state. An HLA
+solves a planning problem, if the set of possible effects intersects the possible set
+of goal states (all possible states where the relevant fluents are true). However,
+it is usually very complex to calculate this exact reachable set.[6][8]<br>
+Furthermore, we are going to introduce the idea of <b>complete</b> and <b>sound</b> ef-
+fects. Sound (or pessimistic) effects are achieved by every possible primitive
+refinement of an HLA in a specific state (in our previous example this would
+be the effect of adding u), while complete (or optimistic) effects are the union
+of all effects of all possible primitive refinements (also in a specific state). This
+means that if the goal state includes some fluents, which are not in the list of
+complete effects of our HLA, it is safe to say that we can not reach this goal
+with this HLA. Similarly, we can conclude that if our desired effect is in the
+list of sound effects of the HLA, we will definitely reach this goal since we will
+satisfy it no matter the chosen refinement. [6] [8]
+</p>
+<p>
+    A basic algorithm, which is using those angelic semantics could work like this.
+We would start with a single HLA Q, which can be decomposed to the initial
+plan. If the complete set of effects of Q does not intersect the set of goals G,
+we can abort the planning process with a failure since our plan is never going
+to achieve the goal. Otherwise, if the complete set intersects the goal set we
+can check whether the sound set also intersects the goal set. In case this is true
+we can directly start to decompose the plan by choosing a state which is in
+the intersection of the set of goal states and the set of sound effects and going
+backwards through the plan.[8][6]<br>
+If the complete set of Q intersects G but the sound set does not, it is not clear
+whether the plan is able to achieve the goal. In this case we have to further
+refine the HLA’s in our current plan to get more detailed descriptions of the
+preconditions and effects.[8]
+</p>
+<h3 style="font-size: 25px;">4.4 Conclusion and related work</h3>
+<p>
+    In general, HTN-planning has a large advantage over the breadth-first planning
+algorithms of classical planning, due to the information that can be encoded
+in the task decomposition hierarchy. Combining HTN-planning with angelic
+semantics leads to an even larger reduction of necessary computational power,
+as well as making the planner able to find correct abstract plans consisting of
+HLAs’.[8]<br>
+Hierarchical Task Planning respectively the planners that employ its principles
+have been used in a broad range of modern problems. The presented SHOP2
+algorithm for example has been used for Web Service Composition, Project
+Planning, Forest Fire Fighting or the evaluation of terror threats.[4]
+Recently, (in 2019) the 3rd Version of the SHOP algorithm SHOP3 has been
+released, written in Lisp, showing that there is still a need for modern HTN-
+planners.[5]
+</p>
+<h3 style="font-size: 30px;">5. References</h3>
+<div class="reference-container">
+    <div class="reference">
+        <div>[1]</div>
+        <div>Jacek Bla ̇zewicz, Wolfgang Domschke, and Erwin Pesch. “The job shop
+            scheduling problem: Conventional and new solution techniques”. In: European Journal of Operational Research 93.1 (1996), pp. 1–33. issn: 0377-
+            2217. doi: <a href="https://doi.org/10.1016/0377-2217(95)00362-2">https://doi.org/10.1016/0377-2217(95)00362-2.</a> url:
+            <a href="https://www.sciencedirect.com/science/article/pii/0377221795003622">https://www.sciencedirect.com/science/article/pii/0377221795003622.</a></div>
+    </div>
+</div>
+<div class="reference-container">
+    <div class="reference">
+        <div>[2]</div>
+        <div>J. Carlier and E. Pinson. “An Algorithm for Solving the Job-Shop Problem”. In: Management Science 35.2 (1989), pp. 164–176. doi: 10.1287/
+            mnsc.35.2.164. eprint: <a href="https://doi.org/10.1287/mnsc.35.2.164">https://doi.org/10.1287/mnsc.35.2.164.</a>
+            url: <a href="https://doi.org/10.1287/mnsc.35.2.164">https://doi.org/10.1287/mnsc.35.2.164.</a></div>
+    </div>
+</div>
+<div class="reference-container">
+    <div class="reference">
+        <div>[3]</div>
+        <div>Kutluhan Erol, D. Nau, and J. Hendler. “Hierarchical Task Network Planning: Formalization, Analysis, and Implementation”. In: Digital Repository
+            at the University of Maryland: Institute for Systems Research Technical
+            Reports (1996). url: <a href="https://drum.lib.umd.edu/handle/1903/5810">https://drum.lib.umd.edu/handle/1903/5810.</a></div>
+    </div>
+</div>
+<div class="reference-container">
+    <div class="reference">
+        <div>[4]</div>
+        <div>lche Georgievski and Marco Aiello. An Overview of Hierarchical Task Net-
+            work Planning. 2014. arXiv: <a href="1403.7426">1403.7426</a> [cs.AI].</div>
+    </div>
+</div>
+<div class="reference-container">
+    <div class="reference">
+        <div>[5]</div>
+        <div>Robert P. Goldman and Uger Kuter. “Hierarchical Task Network Plan-
+            ning in Common Lisp: the case of SHOP3”. In: European Lisp Symposium
+            (2019). url: <a href="https://rpgoldman.goldman-tribe.org/papers/2019-els-SHOP3.pdf">https://rpgoldman.goldman-tribe.org/papers/2019-els-SHOP3.pdf.</a></div>
+    </div>
+</div>
+<div class="reference-container">
+    <div class="reference">
+        <div>[6]</div>
+        <div>Bhaskara Marthi, Stuart J. Russell, and Jason Wolfe. Angelic Semantics
+            for High-Level Actions. Tech. rep. UCB/EECS-2007-89. EECS Department,
+            University of California, Berkeley, July 2007. url: <a href="http://www2.eecs.berkeley.edu/Pubs/TechRpts/2007/EECS-2007-89.html">ttp://www2.eecs.
+                berkeley.edu/Pubs/TechRpts/2007/EECS-2007-89.html.</a></div>
+    </div>
+</div>
+<div class="reference-container">
+    <div class="reference">
+        <div>[7]</div>
+        <div>D. S. Nau et al. “SHOP2: An HTN Planning System”. In: Journal of Ar-
+            tificial Intelligence Research 20 (2003), pp. 379–404. url: <a href="https://doi.org/10.1613/jair.1141">https://doi.org/10.1613/jair.1141.</a></div>
+    </div>
+</div>
+<div class="reference-container">
+    <div class="reference">
+        <div>[8]</div>
+        <div>Stuart Russell and Peter Norvig. Artificial Intelligence: A Modern Ap-
+            proach. 3rd. USA: Prentice Hall Press, 2009. isbn: 0136042597.</div>
+    </div>
+</div>
