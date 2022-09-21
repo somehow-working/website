@@ -1,0 +1,35 @@
+#title {
+    font-size: 40px;
+    align-self: center;
+    font-weight: bold;
+}
+
+#author {
+    align-self: center;
+}
+
+.class_section {
+    font-size: 30px;
+}
+
+.structure_list {
+    list-style: none;
+}
+
+.section_title {
+    font-size: 30px;
+}
+
+.subsection_header {
+    font-size: 25px;
+}
+
+.subsubsection_header {
+    font-size: 23px;
+}
+
+.text_img {
+    align-self: center;
+    width: 50%;
+    height: auto;
+}

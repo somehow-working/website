@@ -1,11 +1,11 @@
-<div style="font-size: 40px; align-self: center; font-weight: bold;">Planning and Acting in the real World</div>
-<h3 style="align-self: center;">Ole Hoepfner</h3>
-<h3 style="font-size: 30px;">Structure</h3>
+<div id="title">Planning and Acting in the real World</div>
+<h3 id="author"">Ole Hoepfner</h3>
+<h3 class="section_title">Structure</h3>
 <ol>
     <li>Introduction</li>
     <li>Approach</li>
     <li>Scheduling Problems</li>
-    <ul style="list-style: none;">
+    <ul class="structure_list">
         <li>3.1 Introduction</li>
         <li>3.2 The branch-and-bound algorithm</li>
         <ul>
@@ -31,7 +31,7 @@
     </ul>
 </ol>
 
-<h3 style="font-size: 30px;">1. Introduction</h3>
+<h3 class="section_title">1. Introduction</h3>
 <p>Planning is a crucial part of modern life. Every human subconsciously makes
     plans on a daily basis, if it is the next trip to the supermarket or how to take
     courses at a university in order to eventually graduate. Apart from those rather
@@ -72,7 +72,7 @@ will discuss HTN-planners, how they operate and what they plan for, as well as
 certain challenges such as unknown planning environments and how they can
 be dealt with.
 </p>
-<h3 style="font-size: 30px;">2. Approach</h3>
+<h3 class="section_title">2. Approach</h3>
 <p>
     In the second chapter, we are going to deal with planning problems, which
 take time constraints on planning into consideration. These types of planning
@@ -95,8 +95,8 @@ the HTN principles. Furthermore, we will present the angelic semantics, pro-
 posed by Marthi, Russel and Wolfe in 2007 with regards to this special approach
 on HTN planning.
 </p>
-<h3 style="font-size: 30px;">3. Scheduling Problems</h3>
-<h3 style="font-size: 25px;">3.1 Introduction</h3>
+<h3 class="section_title">3. Scheduling Problems</h3>
+<h3 class="subsection_header">3.1 Introduction</h3>
 <p>
     In modern factories, the production of a good often requires a lot of different
 steps, which have to be processed in a specific order by different <b>machines</b>.
@@ -127,7 +127,7 @@ Job-shop problems are commonly illustrated by disjunctive graphs. The fol-
 lowing graph shows an example of an job-shop scheduling problem with four
 jobs on a total of three machines (highlighted with different colors).
 </p>
-<img src="../img/proseminar/Screenshot 2022-09-09 213947.png" alt="Disjunctive Graph" style="align-self: center; width: 50%; height: auto;">
+<img class="text_img" src="../img/proseminar/Screenshot 2022-09-09 213947.png" alt="Disjunctive Graph">
 <p>
     The vertices (x, y) represent the singular operations where x denotes the job this
 specific operation is associated with and y denotes the machine this operation
@@ -182,7 +182,7 @@ The classic job-shop problem with 10 machines and 10 jobs was proposed in
 1963 by Muth and Thompson and it was first solved in 1989 by Carlier and
 Pinson with the following branch-and-bound algorithm[2].
 </p>
-<h3 style="font-size: 25px;">3.2 The branch-and-bound algorithm</h3>
+<h3 class="subsection_header">3.2 The branch-and-bound algorithm</h3>
 <p>
     The general idea of this approach is to progressively schedule a disjunctive edge
 and branch into two subtrees associated with the two possible decisions for each
@@ -195,7 +195,7 @@ of disjunctive edges can be detected quite early in the process, so that not opt
 mal branches are detected rather early. Those subtrees associated with a ’bad’
 decision will not have to be explored, making the tree much easier to solve.[1]
 </p>
-<h3 style="font-size: 23px;">3.2.1 Propositions</h3>
+<h3 class="subsubsection_header">3.2.1 Propositions</h3>
 <p>
     First of all, we introduce a couple more variables, which will be important for
 the computation. Each operation <i>i</i> has a <b>processing time</b> of <i>p<sub>i</sub></i>, a <b>release
@@ -272,7 +272,7 @@ fix the disjunctive arc (k,i) if Propositions 7 and 5 are satisfied. In this cas
 is the input of Clique C and scheduled before every other operation.[2] Those
 selections will cut the search tree substantially.[1]
 </p>
-<h3 style="font-size: 23px;">3.2.2 The algorithm</h3>
+<h3 class="subsubsection_header">3.2.2 The algorithm</h3>
 <p>
     At the start of the algorithm we initialize the data structures and compute the
 upper bound of the makespan with an opportunistic algorithm.[2]<br>
@@ -332,7 +332,7 @@ be repeated until all disjunctive edges are selected.[2][1]
 smaller or equal to the upper bound, we choose the branch with minimal
 makespan. This is the optimal solution to our problem.[2]
 </p>
-<h3 style="font-size: 23px;">3.2.3 Example</h3>
+<h3 class="subsubsection_header">3.2.3 Example</h3>
 <p>
     We start by setting the upper bound as 26.<br>
 As stated above, we start with the critical machine, which is in this case ma-
@@ -369,7 +369,7 @@ other one between (3,3) and (4,3), that cannot be selected through the usage of
 the propositions, since both directions lead a schedule smaller than the upper
 bound. We therefore have to branch into two subtrees.[2]
 </p>
-<img src="../img/proseminar/Screenshot 2022-09-10 144929.png" alt="Search Space" style="align-self: center; width: 50%; height: auto;">
+<img class="text_img" src="../img/proseminar/Screenshot 2022-09-10 144929.png" alt="Search Space">
 <p>
     On the left side of the subtree we can immediately select (3, 3) → (4, 3) by
 applying the propositions using the updated release times and tails.<br>
@@ -380,7 +380,7 @@ we get a length of 26. We receive the same length when we schedule (4, 1) →
 (1, 1) and (4, 3) → (3, 3). The best schedule of this instance is therefore 25 and
 we have found the corresponding schedule.[2]
 </p>
-<h3 style="font-size: 23px;">3.2.4 Analysis</h3>
+<h3 class="subsubsection_header">3.2.4 Analysis</h3>
 <p>
     This algorithm provably finds the correct minimal solution to the job-shop prob-
 lem. On the downside this unoptimized version of the algorithm has a com-
@@ -391,7 +391,7 @@ can give a good upper bound to the problem since a bad upper bound can lead
 to an extreme increase of required time for computing, basically trying every
 possible schedule.[2][1]
 </p>
-<h3 style="font-size: 25px;">3.3 Shifting Bottleneck Heuristic</h3>
+<h3 class="subsection_header">3.3 Shifting Bottleneck Heuristic</h3>
 <p>
     The previously presented algorithm yields perfect solutions at the cost of a high
 complexity. In this section we will briefly discuss a method, which also leads
@@ -451,7 +451,7 @@ original schedule.[1]
 have been made over the years in order to get better estimates and a faster
 algorithm.[1]
 </p>
-<h3 style="font-size: 25px;">3.4 Conclusion and related work</h3>
+<h3 class="subsection_header">3.4 Conclusion and related work</h3>
 <p>
     Apart from the presented problem, there exist a lot more variations of the job
 shop problem. For example there is a flow-show problem, where the order in
@@ -481,8 +481,8 @@ tires. As soon as we install a set of tires, we obviously can not use the same s
 on another car. If we would be planning in the real world, one has to consider
 both types of resources.[8]
 </p>
-<h3 style="font-size: 30px;">4. Hierarchical Task Networks</h3>
-<h3 style="font-size: 25px;">4.1 Introduction</h3>
+<h3 class="section_title">4. Hierarchical Task Networks</h3>
+<h3 class="subsection_header">4.1 Introduction</h3>
 <p>
     Classical planning, like the STRIPS algorithm, sequences primitive actions con-
 sidering their <b>preconditions</b> and <b>effects</b>, in order to achieve a certain state,
@@ -520,7 +520,7 @@ in time, or by taking the train or the plane, each of which would require other
 steps.[3]<br>
 Figure 2 shows a task hierarchy of the travel-example.
 </p>
-<img src="../img/proseminar/Screenshot 2022-09-10 151530.png" alt="Tree for the travel-example illustrating the refinements" style="align-self: center; width: 50%; height: auto;">
+<img class="text_img" src="../img/proseminar/Screenshot 2022-09-10 151530.png" alt="Tree for the travel-example illustrating the refinements">
 <p>
     Dashed lines indicate a choice, in this case between taking the plane or the
 car. Something, which is not really shown in the graph but has to be consid-
@@ -529,7 +529,7 @@ are going to be executed from left to right, however for some tasks the order do
 not really matter. For example one could choose between visiting the statue or
 the museum first.
 </p>
-<h3 style="font-size: 23px;">4.1.1 Formal Language</h3>
+<h3 class="subsubsection_header">4.1.1 Formal Language</h3>
 <p>
     First, we will briefly introduce the definitions of the individual components of
 HTN-planning. We will start by describing the <b>HTN-Language</b>, which is used
@@ -616,7 +616,7 @@ tasks, a so called primitive task network.[3]
 planners, which both make use of hierarchical decomposition but differ from
 each other in their search space, meaning they plan differently.[4]
 </p>
-<h3 style="font-size: 23px;">4.1.2 Plan-Based Planners</h3>
+<h3 class="subsubsection_header">4.1.2 Plan-Based Planners</h3>
 <p>
     Plan-based planners start with a top-level task network and repeatedly take
 compound task and replace them with one of their refinements. This leads to a
@@ -628,7 +628,7 @@ delay task ordering and variable bindings in order to be as general as possible.
 Notable plan-based planners include UMCP or the first HTN-planner NOAH.[4]
 The way plan-based planners work can be seen in the following graph.
 </p>
-<img src="../img/proseminar/Screenshot 2022-09-10 153850.png" alt="Search-Space of a plan-based planner" style="align-self: center; width: 50%; height: auto;">
+<img class="text_img" src="../img/proseminar/Screenshot 2022-09-10 153850.png" alt="Search-Space of a plan-based planner">
 <p>
     At the top of this graph, which we will now refer to as the search space, is
 the input task network T N0. In some literature this first task network is en-
@@ -653,7 +653,7 @@ task networks by further refining compound tasks, adding new tasks to the task
 network and reapplying the critic-function until a task network is found, that
 satisfies all constraints.[3][4]
 </p>
-<h3 style="font-size: 23px;">4.1.3 State-Based Planners</h3>
+<h3 class="subsubsection_header">4.1.3 State-Based Planners</h3>
 <p>
     State-based planners start at the current start state. The planning process starts
 by examining, whether a viable task in the current task network is primitive or
@@ -676,7 +676,7 @@ ing that the newly added tasks still satisfy the same ordering constraints that
 the initial compound task did.[4]<br>
 The graph for state-based planning can be seen in the following graph.
 </p>
-<img src="../img/proseminar/Screenshot 2022-09-10 154323.png" alt="Search-Space of a state-based planner" style="align-self: center; width: 50%; height: auto;">
+<img class="text_img" src="../img/proseminar/Screenshot 2022-09-10 154323.png" alt="Search-Space of a state-based planner">
 <p>
     The vertices correspond to the current state of the world. This state can be al-
 tered by different primitive actions s (that are applicable in this state), leading
@@ -693,7 +693,7 @@ subtasks, meaning that the order of some tasks is still unclear and has to be
 figured out. Later we will see how SHOP2. which allows this partial ordering,
 deals with these interactions.[4][7]
 </p>
-<h3 style="font-size: 25px;">4.2 SHOP2</h3>
+<h3 class="subsection_header">4.2 SHOP2</h3>
 <p>
     SHOP2 is an acronym of Simple Hierarchical Ordered Planner 2 [7]. It was
 presented in 2003 and it succeeded the SHOP planner. SHOP2 is a state-based
@@ -796,7 +796,7 @@ are no ’cheap’ plans. SHOP2 can, if needed, also implement a branch-and-boun
 approach on planning to get even better plans. This approach however is very
 computation-heavy since the algorithm has to spend extra time on optimizing the found plans.[7]
 </p>
-<h3 style="font-size: 25px;">4.3 Angelic Semantics</h3>
+<h3 class="subsection_header">4.3 Angelic Semantics</h3>
 <p>
     In this section, we are going to focus on a technique, which has partially already
 been used in the previous section. SHOP2 (and other state-based planners) as-
@@ -857,7 +857,7 @@ whether the plan is able to achieve the goal. In this case we have to further
 refine the HLA’s in our current plan to get more detailed descriptions of the
 preconditions and effects.[8]
 </p>
-<h3 style="font-size: 25px;">4.4 Conclusion and related work</h3>
+<h3 class="subsection_header">4.4 Conclusion and related work</h3>
 <p>
     In general, HTN-planning has a large advantage over the breadth-first planning
 algorithms of classical planning, due to the information that can be encoded
@@ -873,7 +873,7 @@ Recently, (in 2019) the 3rd Version of the SHOP algorithm SHOP3 has been
 released, written in Lisp, showing that there is still a need for modern HTN-
 planners.[5]
 </p>
-<h3 style="font-size: 30px;">5. References</h3>
+<h3 class="section_title">5. References</h3>
 <div class="reference-container">
     <div class="reference">
         <div>[1]</div>
