@@ -66,7 +66,7 @@ function loadDoc(name) {
         content_container.innerHTML = http.responseText;
     }
     http.addEventListener("load", loaded);
-    http.open("GET", `http://localhost:5500${name}`);
+    http.open("GET", `http://olehoepfner.de${name}`);
     http.send();
 }
 
@@ -101,11 +101,11 @@ function loadMenuContainer(id){
    
     switch(id){
         case 1:
-            http.open("GET", `http://localhost:5500/res/block.html`);
+            http.open("GET", `http://olehoepfner.de/res/block.html`);
             break;
 
         case 2:
-            http.open("GET", `http://localhost:5500/res/block_cv.html`);
+            http.open("GET", `http://olehoepfner.de/res/block_cv.html`);
             break;
 
         default:
