@@ -28,6 +28,11 @@ content_btn.addEventListener("click", e => {
     loadMenuContainer(1);
 });
 
+sign_in_btn.addEventListener("click", e => {
+    loadDoc("/res/login_form.html");
+    block_container.innerHTML="";
+})
+
 buttons.forEach(element => {
     element.addEventListener("mouseenter", e => e.target.style.color = "black");
     element.addEventListener("mouseleave", e => mouseLeave(e));
@@ -61,7 +66,7 @@ function loadDoc(name) {
         content_container.innerHTML = http.responseText;
     }
     http.addEventListener("load", loaded);
-    http.open("GET", `http://olehoepfner.de${name}`);
+    http.open("GET", `http://localhost:5500${name}`);
     http.send();
 }
 
@@ -96,11 +101,11 @@ function loadMenuContainer(id){
    
     switch(id){
         case 1:
-            http.open("GET", `http://olehoepfner.de/res/block.html`);
+            http.open("GET", `http://localhost:5500/res/block.html`);
             break;
 
         case 2:
-            http.open("GET", `http://olehoepfner.de/res/block_cv.html`);
+            http.open("GET", `http://localhost:5500/res/block_cv.html`);
             break;
 
         default:
