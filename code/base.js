@@ -31,6 +31,8 @@ content_btn.addEventListener("click", e => {
 sign_in_btn.addEventListener("click", e => {
     loadDoc("/res/login_form.html");
     block_container.innerHTML="";
+    let signup_btn = document.querySelector("#start_signin");
+    signup_btn.addEventListener("click", signIn());
 })
 
 buttons.forEach(element => {
@@ -113,4 +115,9 @@ function loadMenuContainer(id){
     }
     
     http.send();
+}
+
+function signIn(){
+    let username = document.querySelector("#username_input").value;
+    let password = document.querySelector("#password_input").value;
 }
