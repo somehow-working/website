@@ -29,10 +29,8 @@ content_btn.addEventListener("click", e => {
 });
 
 sign_in_btn.addEventListener("click", e => {
-    loadDoc("/res/login_form.html");
+    loadDoc("/res/login_form.html", 1);
     block_container.innerHTML="";
-    let signup_btn = document.querySelector("#start_signin");
-    signup_btn.addEventListener("click", signIn());
 })
 
 buttons.forEach(element => {
@@ -61,14 +59,20 @@ function navBtn(event){
 }
 
 //load an arbitrary doc by simply appending the path to the doc startting with the domain (root in nginx server {}) 
-function loadDoc(name) {
+function loadDoc(name, mode=0) {
     let http = new XMLHttpRequest();
 
     function loaded(){
         content_container.innerHTML = http.responseText;
+        switch(mode){
+            case 1:
+                let signup_btn = document.querySelector("#start_signin");
+                signup_btn.addEventListener("click", e => signIn());
+                break;
+        }
     }
     http.addEventListener("load", loaded);
-    http.open("GET", `http://olehoepfner.de${name}`);
+    http.open("GET", `http://localhost:5500${name}`);
     http.send();
 }
 
@@ -103,11 +107,11 @@ function loadMenuContainer(id){
    
     switch(id){
         case 1:
-            http.open("GET", `http://olehoepfner.de/res/block.html`);
+            http.open("GET", `http://localhost:5500/res/block.html`);
             break;
 
         case 2:
-            http.open("GET", `http://olehoepfner.de/res/block_cv.html`);
+            http.open("GET", `http://localhost:5500/res/block_cv.html`);
             break;
 
         default:
@@ -118,6 +122,10 @@ function loadMenuContainer(id){
 }
 
 function signIn(){
+    //get data
     let username = document.querySelector("#username_input").value;
     let password = document.querySelector("#password_input").value;
+    
+    let http = new XMLHttpRequest(); 
+    http.open("POST", "http://localhost:5500/api/signin.api", true);
 }

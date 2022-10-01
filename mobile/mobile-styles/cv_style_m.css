@@ -1,0 +1,22 @@
+.cv_container {
+    font-size: 15px;
+}
+
+#title {
+    font-size: 40px;
+}
+
+img {
+    height: auto;
+    width: 50%;
+}
+
+.right_side {
+    list-style: none;
+}
+
+.section {
+    font-size: 15px;
+    display: flex;
+    flex-direction: row;
+}

@@ -1,0 +1,25 @@
+.login_container {
+    display: flex;
+    flex-direction: column;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+#start_signin {
+    background-color: rgb(16, 112, 171);
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 2px white;
+    border-radius: 15px;
+}
+
+#username_input,
+#password_input {
+    font-size: 18px;
+}
